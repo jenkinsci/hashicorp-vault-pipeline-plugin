@@ -22,7 +22,7 @@
     </properties>
 
 
-    <name>Vault Pipeline Plugin</name>
+    <name>Hashicorp Vault Pipeline Plugin</name>
     <description>Enables pulling of vault values as a pipeline step</description>
     <licenses>
         <license>
