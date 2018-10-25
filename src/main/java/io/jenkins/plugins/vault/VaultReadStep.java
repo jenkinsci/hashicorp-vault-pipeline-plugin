@@ -5,7 +5,9 @@ import com.datapipe.jenkins.vault.VaultAccessor;
 import com.datapipe.jenkins.vault.configuration.GlobalVaultConfiguration;
 import com.datapipe.jenkins.vault.credentials.VaultCredential;
 import com.datapipe.jenkins.vault.exception.VaultPluginException;
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.model.GlobalConfiguration;
@@ -65,10 +67,17 @@ public class VaultReadStep extends Step {
             this.step = step;
         }
 
-        private VaultAccessor getAccessor(Run<?, ?> run, TaskListener listener) {
+        private EnvVars getEnvironment() throws Exception {
+            Run run = getContext().get(Run.class);
+            TaskListener taskListener = getContext().get(TaskListener.class);
+            return run.getEnvironment(taskListener);
+        }
+
+        private VaultAccessor getAccessor(Run<?, ?> run, TaskListener listener) throws Exception {
+            EnvVars environment = getEnvironment();
             GlobalVaultConfiguration vaultConfig = GlobalConfiguration.all().get(GlobalVaultConfiguration.class);
-            String credentialsId = step.credentialsId == null || step.credentialsId.isEmpty() ? vaultConfig.getConfiguration().getVaultCredentialId() : step.credentialsId;
-            String vaultUrl = step.vaultUrl == null || step.vaultUrl.isEmpty() ? vaultConfig.getConfiguration().getVaultUrl() : step.vaultUrl;
+            String credentialsId = step.credentialsId == null || step.credentialsId.isEmpty() ? vaultConfig.getConfiguration().getVaultCredentialId() : Util.replaceMacro(step.credentialsId, environment);
+            String vaultUrl = step.vaultUrl == null || step.vaultUrl.isEmpty() ? vaultConfig.getConfiguration().getVaultUrl() : Util.replaceMacro(step.vaultUrl, environment);
 
             listener.getLogger().append(String.format("using vault credentials \"%s\" and url \"%s\"", credentialsId, vaultUrl));
 
@@ -86,7 +95,8 @@ public class VaultReadStep extends Step {
         @Override
         public boolean start() throws Exception {
             try {
-                String value = getAccessor(getContext().get(Run.class), getContext().get(TaskListener.class)).read(step.path).getData().get(step.key);
+                EnvVars environment = getEnvironment();
+                String value = getAccessor(getContext().get(Run.class), getContext().get(TaskListener.class)).read(Util.replaceMacro(step.path, environment)).getData().get(Util.replaceMacro(step.key, environment));
                 getContext().onSuccess(value);
             } catch (VaultPluginException e) {
                 getContext().onFailure(e);
