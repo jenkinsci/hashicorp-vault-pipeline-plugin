@@ -1,5 +1,6 @@
 package io.jenkins.plugins.vault;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -59,6 +60,11 @@ public class VaultReadStep extends Step {
     @DataBoundSetter
     public void setVaultUrl(String vaultUrl) {
         this.vaultUrl = vaultUrl;
+    }
+
+    @DataBoundSetter
+    public void setEngineVersion(int engineVersion) {
+        this.engineVersion = engineVersion;
     }
 
     @Override
@@ -133,7 +139,10 @@ public class VaultReadStep extends Step {
 
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
-            return Set.of(Run.class, TaskListener.class);
+            HashSet<Class<?>> requiredContext = new HashSet<>();
+            requiredContext.add(Run.class);
+            requiredContext.add(TaskListener.class);
+            return requiredContext;
         }
     }
 }
