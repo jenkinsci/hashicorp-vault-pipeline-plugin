@@ -1,5 +1,6 @@
 package io.jenkins.plugins.vault;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,7 +40,7 @@ public class VaultReadStep extends Step {
 
     @DataBoundConstructor
     public VaultReadStep() {
-
+        // default constructor for creating the step, together with setters
     }
 
     @DataBoundSetter
@@ -68,7 +69,7 @@ public class VaultReadStep extends Step {
     }
 
     @Override
-    public StepExecution start(StepContext stepContext) throws Exception {
+    public StepExecution start(StepContext stepContext) {
         return new VaultStepExecution(this, stepContext);
     }
 
@@ -76,7 +77,7 @@ public class VaultReadStep extends Step {
 
         private static final long serialVersionUID = 1L;
 
-        private transient final VaultReadStep step;
+        private final transient VaultReadStep step;
 
         private VaultStepExecution(VaultReadStep step, StepContext context) {
             super(context);
@@ -98,31 +99,32 @@ public class VaultReadStep extends Step {
         }
 
         @Override
-        public void stop(@Nonnull Throwable throwable) throws Exception {
+        public void stop(@Nonnull Throwable throwable) {
+            // no action required on stopping
         }
 
-        private VaultAccessor getAccessor(Run<?, ?> run, TaskListener listener) throws Exception {
+        private VaultAccessor getAccessor(Run<?, ?> run, TaskListener listener) throws IOException, InterruptedException {
             EnvVars environment = getEnvironment();
-            GlobalVaultConfiguration vaultConfig = GlobalConfiguration.all()
-                .get(GlobalVaultConfiguration.class);
-            String credentialsId = step.credentialsId == null || step.credentialsId.isEmpty() ? vaultConfig.getConfiguration()
-                .getVaultCredentialId() : Util.replaceMacro(step.credentialsId, environment);
-            String vaultUrl = step.vaultUrl == null || step.vaultUrl.isEmpty() ? vaultConfig.getConfiguration()
-                .getVaultUrl() : Util.replaceMacro(step.vaultUrl, environment);
+            GlobalVaultConfiguration vaultConfig = GlobalConfiguration.all().get(GlobalVaultConfiguration.class);
+            String credentialsId = step.credentialsId == null || step.credentialsId.isEmpty() ? vaultConfig.getConfiguration().getVaultCredentialId() : Util.replaceMacro(step.credentialsId, environment);
+            String vaultUrl = step.vaultUrl == null || step.vaultUrl.isEmpty() ? vaultConfig.getConfiguration().getVaultUrl() : Util.replaceMacro(step.vaultUrl, environment);
 
-            listener.getLogger()
-                .append(String.format("using vault credentials \"%s\" and url \"%s\"", credentialsId, vaultUrl));
+            listener.getLogger().append(String.format("using vault url \"%s\" and credentialsId \"%s\"", vaultUrl, credentialsId));
 
             VaultAccessor vaultAccessor = new VaultAccessor();
             VaultCredential credentials = CredentialsProvider.findCredentialById(credentialsId, VaultCredential.class, run);
 
             if (credentials != null) {
+                listener.getLogger().append("credentials with id \"%s\" found, initializing with credentials");
                 vaultAccessor.init(vaultUrl, credentials);
+            } else {
+                listener.getLogger().append("no credentials found, initializing without credentials");
+                vaultAccessor.init(vaultUrl);
             }
             return vaultAccessor;
         }
 
-        private EnvVars getEnvironment() throws Exception {
+        private EnvVars getEnvironment() throws IOException, InterruptedException {
             Run run = getContext().get(Run.class);
             TaskListener taskListener = getContext().get(TaskListener.class);
             return run.getEnvironment(taskListener);
