@@ -87,7 +87,7 @@ public class VaultReadStep extends Step {
             VaultCredential credentials = CredentialsProvider.findCredentialById(credentialsId, VaultCredential.class, run);
 
             if (credentials != null) {
-                vaultAccessor.auth(credentials);
+                vaultAccessor.init(vaultUrl, credentials);
             }
             return vaultAccessor;
         }
