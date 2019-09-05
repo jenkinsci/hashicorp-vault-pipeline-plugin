@@ -27,6 +27,7 @@ public class VaultReadStep extends Step {
     private String key;
     private String credentialsId;
     private String vaultUrl;
+    private String engineVersion;
 
     @DataBoundConstructor
     public VaultReadStep() {
@@ -51,6 +52,11 @@ public class VaultReadStep extends Step {
     @DataBoundSetter
     public void setVaultUrl(String vaultUrl) {
         this.vaultUrl = vaultUrl;
+    }
+
+    @DataBoundSetter
+    public void setEngineVersion(String engineVersion) {
+        this.engineVersion = engineVersion;
     }
 
     @Override
@@ -82,13 +88,10 @@ public class VaultReadStep extends Step {
             listener.getLogger().append(String.format("using vault credentials \"%s\" and url \"%s\"", credentialsId, vaultUrl));
 
             VaultAccessor vaultAccessor = new VaultAccessor();
-            vaultAccessor.init(vaultUrl);
 
             VaultCredential credentials = CredentialsProvider.findCredentialById(credentialsId, VaultCredential.class, run);
 
-            if (credentials != null) {
-                vaultAccessor.auth(credentials);
-            }
+            vaultAccessor.init(vaultUrl, credentials);
             return vaultAccessor;
         }
 
@@ -96,7 +99,10 @@ public class VaultReadStep extends Step {
         public boolean start() throws Exception {
             try {
                 EnvVars environment = getEnvironment();
-                String value = getAccessor(getContext().get(Run.class), getContext().get(TaskListener.class)).read(Util.replaceMacro(step.path, environment)).getData().get(Util.replaceMacro(step.key, environment));
+                String path = Util.replaceMacro(step.path, environment);
+                Integer engineVersion = Integer.parseInt(Util.replaceMacro(step.engineVersion, environment));
+                String key = Util.replaceMacro(step.key, environment);
+                String value = getAccessor(getContext().get(Run.class), getContext().get(TaskListener.class)).read(path, engineVersion).getData().get(key);
                 getContext().onSuccess(value);
             } catch (VaultPluginException e) {
                 getContext().onFailure(e);
@@ -113,7 +119,10 @@ public class VaultReadStep extends Step {
     public static final class DescriptorImpl extends StepDescriptor {
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
-            return new HashSet<Class<?>>() {{ add(Run.class); add(TaskListener.class); }};
+            return new HashSet<Class<?>>() {{
+                add(Run.class);
+                add(TaskListener.class);
+            }};
         }
 
         @Override

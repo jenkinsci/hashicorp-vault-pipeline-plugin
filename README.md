@@ -9,13 +9,13 @@ Enables the use of vault from within a pipeline.
 
 ### Examples
 
-##### Using gloabl vault configuration
+##### Using global vault configuration
 
 ```
 pipeline {
     agent any
     environment {
-        SECRET = vault path: 'secrets', key: 'username'
+        SECRET = vault path: 'secrets', key: 'username', engineVersion: "2"
     }
     stages {
         stage("read vault key") {
@@ -33,7 +33,7 @@ pipeline {
 pipeline {
     agent any
     environment {
-        SECRET = vault path: 'secrets', key: 'username', vaultUrl: 'https://my-vault.com:8200', credentialsId: 'my-creds'
+        SECRET = vault path: 'secrets', key: 'username', vaultUrl: 'https://my-vault.com:8200', credentialsId: 'my-creds', engineVersion: "2"
     }
     stages {
         stage("read vault key") {
@@ -54,9 +54,9 @@ By default, the plugin does not hide any accidental printing of secret to consol
 pipeline {
     agent any
     environment {
-        SECRET1    = vault path: 'secrets', key: 'password1', vaultUrl: 'https://my-vault.com:8200', credentialsId: 'my-creds'
-        SECRET2    = vault path: 'secrets', key: 'password2', vaultUrl: 'https://my-vault.com:8200', credentialsId: 'my-creds'
-        NOT_SECRET = vault path: 'secrets', key: 'username', vaultUrl: 'https://my-vault.com:8200', credentialsId: 'my-creds'
+        SECRET1    = vault path: 'secrets', key: 'password1', vaultUrl: 'https://my-vault.com:8200', credentialsId: 'my-creds', engineVersion: "2"
+        SECRET2    = vault path: 'secrets', key: 'password2', vaultUrl: 'https://my-vault.com:8200', credentialsId: 'my-creds', engineVersion: "2"
+        NOT_SECRET = vault path: 'secrets', key: 'username', vaultUrl: 'https://my-vault.com:8200', credentialsId: 'my-creds', engineVersion: "2"
     }
     stages {
         stage("read vault key") {
