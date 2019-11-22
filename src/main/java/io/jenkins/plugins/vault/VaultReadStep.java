@@ -98,7 +98,7 @@ public class VaultReadStep extends Step {
         private int getEngineVersion(EnvVars environment) {
             if (step.engineVersion == null || step.engineVersion.isEmpty()) {
                 GlobalVaultConfiguration vaultConfig = GlobalConfiguration.all().get(GlobalVaultConfiguration.class);
-                return vaultConfig.getConfiguration().getEngineVersion();
+                return vaultConfig == null ? 2 : vaultConfig.getConfiguration().getEngineVersion();
             }
 
             return Integer.parseInt(Util.replaceMacro(step.engineVersion, environment));
