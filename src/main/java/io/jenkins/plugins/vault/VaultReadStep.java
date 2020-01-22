@@ -1,5 +1,6 @@
 package io.jenkins.plugins.vault;
 
+import com.bettercloud.vault.VaultConfig;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.datapipe.jenkins.vault.VaultAccessor;
 import com.datapipe.jenkins.vault.configuration.GlobalVaultConfiguration;
@@ -10,7 +11,6 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import jenkins.model.GlobalConfiguration;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
@@ -81,17 +81,22 @@ public class VaultReadStep extends Step {
 
         private VaultAccessor getAccessor(Run<?, ?> run, TaskListener listener) throws Exception {
             EnvVars environment = getEnvironment();
-            GlobalVaultConfiguration vaultConfig = GlobalConfiguration.all().get(GlobalVaultConfiguration.class);
+            GlobalVaultConfiguration vaultConfig = GlobalVaultConfiguration.get();
             String credentialsId = step.credentialsId == null || step.credentialsId.isEmpty() ? vaultConfig.getConfiguration().getVaultCredentialId() : Util.replaceMacro(step.credentialsId, environment);
             String vaultUrl = step.vaultUrl == null || step.vaultUrl.isEmpty() ? vaultConfig.getConfiguration().getVaultUrl() : Util.replaceMacro(step.vaultUrl, environment);
 
             listener.getLogger().append(String.format("using vault credentials \"%s\" and url \"%s\"", credentialsId, vaultUrl));
 
-            VaultAccessor vaultAccessor = new VaultAccessor();
-
             VaultCredential credentials = CredentialsProvider.findCredentialById(credentialsId, VaultCredential.class, run);
 
-            vaultAccessor.init(vaultUrl, credentials);
+            VaultConfig config = GlobalVaultConfiguration.get().getConfiguration().getVaultConfig();
+
+            config.address(vaultUrl);
+
+            VaultAccessor vaultAccessor = new VaultAccessor(config, credentials);
+
+            vaultAccessor.init();
+
             return vaultAccessor;
         }
 
@@ -100,9 +105,10 @@ public class VaultReadStep extends Step {
             try {
                 EnvVars environment = getEnvironment();
                 String path = Util.replaceMacro(step.path, environment);
-                Integer engineVersion = Integer.parseInt(Util.replaceMacro(step.engineVersion, environment));
+                GlobalVaultConfiguration vaultConfig = GlobalVaultConfiguration.get();
+                String engineVersion = step.engineVersion == null || step.engineVersion.isEmpty() ? vaultConfig.getConfiguration().getEngineVersion().toString() : Util.replaceMacro(step.engineVersion, environment);
                 String key = Util.replaceMacro(step.key, environment);
-                String value = getAccessor(getContext().get(Run.class), getContext().get(TaskListener.class)).read(path, engineVersion).getData().get(key);
+                String value = getAccessor(getContext().get(Run.class), getContext().get(TaskListener.class)).read(path, Integer.valueOf(engineVersion)).getData().get(key);
                 getContext().onSuccess(value);
             } catch (VaultPluginException e) {
                 getContext().onFailure(e);
