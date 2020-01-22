@@ -4,8 +4,8 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.4</version>
-        <relativePath />
+        <version>3.56</version>
+        <relativePath/>
     </parent>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>hashicorp-vault-pipeline</artifactId>
@@ -13,14 +13,9 @@
     <packaging>hpi</packaging>
 
     <properties>
-        <jenkins.version>2.138.1</jenkins.version>
+        <jenkins.version>2.204.1</jenkins.version>
         <java.level>8</java.level>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <junit.version>4.1</junit.version>
-        <jenkins-pipeline-unit.version>1.1</jenkins-pipeline-unit.version>
     </properties>
-
 
     <name>Hashicorp Vault Pipeline Plugin</name>
     <description>Enables pulling of vault values as a pipeline step</description>
@@ -42,7 +37,7 @@
         <connection>scm:git:ssh://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>hashicorp-vault-pipeline-1.1</tag>
+        <tag>hashicorp-vault-pipeline-1.4</tag>
     </scm>
 
 
@@ -63,17 +58,7 @@
         <dependency>
             <groupId>com.datapipe.jenkins.plugins</groupId>
             <artifactId>hashicorp-vault-plugin</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-api</artifactId>
-            <version>2.15</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-cps</artifactId>
-            <version>2.28</version>
+            <version>3.0.0</version>
         </dependency>
     </dependencies>
 </project>
