@@ -95,12 +95,21 @@ public class VaultReadStep extends Step {
             return vaultAccessor;
         }
 
+        private int getEngineVersion(EnvVars environment) {
+            if (step.engineVersion == null || step.engineVersion.isEmpty()) {
+                GlobalVaultConfiguration vaultConfig = GlobalConfiguration.all().get(GlobalVaultConfiguration.class);
+                return vaultConfig == null ? 2 : vaultConfig.getConfiguration().getEngineVersion();
+            }
+
+            return Integer.parseInt(Util.replaceMacro(step.engineVersion, environment));
+        }
+
         @Override
         public boolean start() throws Exception {
             try {
                 EnvVars environment = getEnvironment();
                 String path = Util.replaceMacro(step.path, environment);
-                Integer engineVersion = Integer.parseInt(Util.replaceMacro(step.engineVersion, environment));
+                Integer engineVersion = getEngineVersion(environment);
                 String key = Util.replaceMacro(step.key, environment);
                 String value = getAccessor(getContext().get(Run.class), getContext().get(TaskListener.class)).read(path, engineVersion).getData().get(key);
                 getContext().onSuccess(value);

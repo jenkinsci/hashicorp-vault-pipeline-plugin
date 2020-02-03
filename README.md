@@ -15,7 +15,7 @@ Enables the use of vault from within a pipeline.
 pipeline {
     agent any
     environment {
-        SECRET = vault path: 'secrets', key: 'username', engineVersion: "2"
+        SECRET = vault path: 'secrets', key: 'username'
     }
     stages {
         stage("read vault key") {
