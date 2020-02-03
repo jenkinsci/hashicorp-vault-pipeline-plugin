@@ -24,6 +24,7 @@
 
     <name>Hashicorp Vault Pipeline Plugin</name>
     <description>Enables pulling of vault values as a pipeline step</description>
+    <url>https://github.com/jenkinsci/hashicorp-vault-pipeline-plugin/</url>
     <licenses>
         <license>
             <name>MIT License</name>
