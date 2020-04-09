@@ -1,5 +1,6 @@
 package io.jenkins.plugins.vault;
 
+import com.bettercloud.vault.VaultConfig;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.datapipe.jenkins.vault.VaultAccessor;
 import com.datapipe.jenkins.vault.configuration.GlobalVaultConfiguration;
@@ -87,11 +88,16 @@ public class VaultReadStep extends Step {
 
             listener.getLogger().append(String.format("using vault credentials \"%s\" and url \"%s\"", credentialsId, vaultUrl));
 
-            VaultAccessor vaultAccessor = new VaultAccessor();
-
             VaultCredential credentials = CredentialsProvider.findCredentialById(credentialsId, VaultCredential.class, run);
 
-            vaultAccessor.init(vaultUrl, credentials);
+            VaultConfig config = null;
+            if (vaultConfig != null) config = vaultConfig.getConfiguration().getVaultConfig();
+            if (config == null) config = new VaultConfig();
+            config.address(vaultUrl);
+
+            VaultAccessor vaultAccessor = new VaultAccessor(config, credentials);
+
+            vaultAccessor.init();
             return vaultAccessor;
         }
 
