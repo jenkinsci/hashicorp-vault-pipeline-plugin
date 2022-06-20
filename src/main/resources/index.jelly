@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    Enables pulling of vault values as a pipeline step.
+</div>

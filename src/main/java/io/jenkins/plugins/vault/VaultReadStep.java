@@ -1,8 +1,10 @@
 package io.jenkins.plugins.vault;
 
+import com.bettercloud.vault.VaultConfig;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.datapipe.jenkins.vault.VaultAccessor;
 import com.datapipe.jenkins.vault.configuration.GlobalVaultConfiguration;
+import com.datapipe.jenkins.vault.configuration.VaultConfiguration;
 import com.datapipe.jenkins.vault.credentials.VaultCredential;
 import com.datapipe.jenkins.vault.exception.VaultPluginException;
 import hudson.EnvVars;
@@ -81,15 +83,19 @@ public class VaultReadStep extends Step {
 
         private VaultAccessor getAccessor(Run<?, ?> run, TaskListener listener) throws Exception {
             EnvVars environment = getEnvironment();
-            GlobalVaultConfiguration vaultConfig = GlobalConfiguration.all().get(GlobalVaultConfiguration.class);
-            String credentialsId = step.credentialsId == null || step.credentialsId.isEmpty() ? vaultConfig.getConfiguration().getVaultCredentialId() : Util.replaceMacro(step.credentialsId, environment);
-            String vaultUrl = step.vaultUrl == null || step.vaultUrl.isEmpty() ? vaultConfig.getConfiguration().getVaultUrl() : Util.replaceMacro(step.vaultUrl, environment);
+            VaultConfiguration vaultConfiguration = GlobalVaultConfiguration.get().getConfiguration();
+            String credentialsId = step.credentialsId == null || step.credentialsId.isEmpty() ? vaultConfiguration.getVaultCredentialId() : Util.replaceMacro(step.credentialsId, environment);
+            String vaultUrl = step.vaultUrl == null || step.vaultUrl.isEmpty() ? vaultConfiguration.getVaultUrl() : Util.replaceMacro(step.vaultUrl, environment);
 
             listener.getLogger().append(String.format("using vault credentials \"%s\" and url \"%s\"", credentialsId, vaultUrl));
 
-            VaultAccessor vaultAccessor = new VaultAccessor();
-
             VaultCredential credentials = CredentialsProvider.findCredentialById(credentialsId, VaultCredential.class, run);
+
+            VaultConfig vaultConfig = vaultConfiguration.getVaultConfig();
+            vaultConfig.address(vaultUrl);
+
+            VaultAccessor vaultAccessor = new VaultAccessor(vaultConfig, credentials);
+            vaultAccessor.init();
 
             vaultAccessor.init(vaultUrl, credentials);
             return vaultAccessor;
@@ -97,8 +103,8 @@ public class VaultReadStep extends Step {
 
         private int getEngineVersion(EnvVars environment) {
             if (step.engineVersion == null || step.engineVersion.isEmpty()) {
-                GlobalVaultConfiguration vaultConfig = GlobalConfiguration.all().get(GlobalVaultConfiguration.class);
-                return vaultConfig == null ? 2 : vaultConfig.getConfiguration().getEngineVersion();
+                VaultConfig vaultConfig = GlobalVaultConfiguration.get().getConfiguration().getVaultConfig();
+                return vaultConfig.getGlobalEngineVersion();
             }
 
             return Integer.parseInt(Util.replaceMacro(step.engineVersion, environment));
