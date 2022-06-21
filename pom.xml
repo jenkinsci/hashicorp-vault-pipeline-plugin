@@ -4,8 +4,8 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.4</version>
-        <relativePath />
+        <version>4.40</version>
+        <relativePath/>
     </parent>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>hashicorp-vault-pipeline</artifactId>
@@ -13,17 +13,12 @@
     <packaging>hpi</packaging>
 
     <properties>
-        <jenkins.version>2.138.1</jenkins.version>
-        <java.level>8</java.level>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <junit.version>4.1</junit.version>
-        <jenkins-pipeline-unit.version>1.1</jenkins-pipeline-unit.version>
+        <jenkins.version>2.332.1</jenkins.version>
+        <spotbugs.effort>Max</spotbugs.effort>
+        <spotbugs.failOnError>true</spotbugs.failOnError>
     </properties>
 
-
     <name>Hashicorp Vault Pipeline Plugin</name>
-    <description>Enables pulling of vault values as a pipeline step</description>
     <url>https://github.com/jenkinsci/hashicorp-vault-pipeline-plugin/</url>
     <licenses>
         <license>
@@ -42,10 +37,9 @@
     <scm>
         <connection>scm:git:ssh://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>hashicorp-vault-pipeline-1.1</tag>
+        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+        <tag>hashicorp-vault-pipeline-1.4</tag>
     </scm>
-
 
     <repositories>
         <repository>
@@ -60,21 +54,22 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-2.332.x</artifactId>
+                <version>1195.v33041c1f1b_b_2</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.datapipe.jenkins.plugins</groupId>
             <artifactId>hashicorp-vault-plugin</artifactId>
-            <version>2.4.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-api</artifactId>
-            <version>2.15</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-cps</artifactId>
-            <version>2.28</version>
+            <version>336.v182c0fbaaeb7</version>
         </dependency>
     </dependencies>
 </project>
